@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.4)
 
-project(seeta_fa_lib)
+project(SeetaFaceAlignment)
 
 # Build options
 option(BUILD_EXAMPLES  "Set to ON to build examples"  ON)
