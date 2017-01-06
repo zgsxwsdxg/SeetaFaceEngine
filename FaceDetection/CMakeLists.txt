@@ -50,6 +50,7 @@ set(src_files
     )
 
 # Build shared library
+set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 add_library(seeta_facedet_lib SHARED ${src_files})
 set(facedet_required_libs seeta_facedet_lib)
 
@@ -62,7 +63,8 @@ if (BUILD_EXAMPLES)
     else()
         include_directories(${OpenCV_INCLUDE_DIRS})
         list(APPEND facedet_required_libs ${OpenCV_LIBS})
-        
+        set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
+        link_directories(${PROJECT_SOURCE_DIR}/lib)
         add_executable(facedet_test src/test/facedetection_test.cpp)
         target_link_libraries(facedet_test ${facedet_required_libs})
     endif()

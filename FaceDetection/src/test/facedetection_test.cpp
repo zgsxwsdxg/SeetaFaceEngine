@@ -40,30 +40,38 @@
 #include "face_detection.h"
 
 using namespace std;
+using namespace cv;
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
   if (argc < 3) {
-      cout << "Usage: " << argv[0]
-          << " image_path model_path"
-          << endl;
-      return -1;
+    cout << "Usage: " << argv[0]
+         << " image_path model_path"
+         << endl;
+    return -1;
   }
 
-  const char* img_path = argv[1];
+  const char *img_path = argv[1];
   seeta::FaceDetection detector(argv[2]);
 
   detector.SetMinFaceSize(40);
   detector.SetScoreThresh(2.f);
   detector.SetImagePyramidScaleFactor(0.8f);
-  detector.SetWindowStep(4, 4);
+  detector.SetWindowStep(2, 2);
 
   cv::Mat img = cv::imread(img_path, cv::IMREAD_UNCHANGED);
+
+  if (img.empty()) {
+    cout << "Load image failed.\n";
+    return -1;
+  }
+
   cv::Mat img_gray;
 
-  if (img.channels() != 1)
+  if (img.channels() != 1) {
     cv::cvtColor(img, img_gray, cv::COLOR_BGR2GRAY);
-  else
+  } else {
     img_gray = img;
+  }
 
   seeta::ImageData img_data;
   img_data.data = img_gray.data;
@@ -74,7 +82,7 @@ int main(int argc, char** argv) {
   long t0 = cv::getTickCount();
   std::vector<seeta::FaceInfo> faces = detector.Detect(img_data);
   long t1 = cv::getTickCount();
-  double secs = (t1 - t0)/cv::getTickFrequency();
+  double secs = (t1 - t0) / cv::getTickFrequency();
 
   cout << "Detections takes " << secs << " seconds " << endl;
 #ifdef USE_OPENMP
@@ -89,8 +97,8 @@ int main(int argc, char** argv) {
   cout << "SSE is not used." << endl;
 #endif
 
-  cout << "Image size (wxh): " << img_data.width << "x" 
-      << img_data.height << endl;
+  cout << "Image size (wxh): " << img_data.width << "x"
+       << img_data.height << endl;
 
   cv::Rect face_rect;
   int32_t num_face = static_cast<int32_t>(faces.size());
@@ -104,8 +112,11 @@ int main(int argc, char** argv) {
     cv::rectangle(img, face_rect, CV_RGB(0, 0, 255), 4, 8, 0);
   }
 
-  cv::namedWindow("Test", cv::WINDOW_AUTOSIZE);
-  cv::imshow("Test", img);
-  cv::waitKey(0);
-  cv::destroyAllWindows();
+  string save_path = argv[1];
+  save_path += "_faces.jpg";
+  imwrite(save_path, img);
+//  cv::namedWindow("Test", cv::WINDOW_AUTOSIZE);
+//  cv::imshow("Test", img);
+//  cv::waitKey(0);
+//  cv::destroyAllWindows();
 }
