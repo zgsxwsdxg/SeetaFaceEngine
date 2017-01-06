@@ -27,7 +27,6 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 
 add_library(seeta_fa_lib SHARED ${src_files})
 
-link_directories(${PROJECT_SOURCE_DIR}/lib)
 set(fa_required_libs seeta_fa_lib)
 
 if (BUILD_EXAMPLES)
@@ -39,6 +38,7 @@ if (BUILD_EXAMPLES)
         include_directories(${OpenCV_INCLUDE_DIRS} build)
 	link_directories(build)
         list(APPEND fa_required_libs ${OpenCV_LIBS} seeta_facedet_lib)
+        link_directories(${PROJECT_SOURCE_DIR}/lib)
         add_executable(fa_test src/test/face_alignment_test.cpp)
         target_link_libraries(fa_test ${fa_required_libs})
     endif()
