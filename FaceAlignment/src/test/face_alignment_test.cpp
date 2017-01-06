@@ -7,7 +7,7 @@
  * face alignment method described in the following paper:
  *
  *
- *   Coarse-to-Fine Auto-Encoder Networks (CFAN) for Real-Time Face Alignment, 
+ *   Coarse-to-Fine Auto-Encoder Networks (CFAN) for Real-Time Face Alignment,
  *   Jie Zhang, Shiguang Shan, Meina Kan, Xilin Chen. In Proceeding of the
  *   European Conference on Computer Vision (ECCV), 2014
  *
@@ -47,35 +47,44 @@ std::string MODEL_DIR = "../../model/";
 std::string DATA_DIR = "./data/";
 std::string MODEL_DIR = "./model/";
 #endif
+using namespace std;
+using namespace cv;
 
-int main(int argc, char** argv)
-{
+int main(int argc, char **argv) {
+  if (argc != 4) {
+    cout << "Usage: " << argv[0] <<
+         "face_detection_model face_alignment_model image_file" << endl;
+    return -1;
+  }
+
   // Initialize face detection model
-  seeta::FaceDetection detector("../../../FaceDetection/model/seeta_fd_frontal_v1.0.bin");
+  seeta::FaceDetection
+  detector(argv[1]);
   detector.SetMinFaceSize(40);
   detector.SetScoreThresh(2.f);
   detector.SetImagePyramidScaleFactor(0.8f);
-  detector.SetWindowStep(4, 4);
+  detector.SetWindowStep(2, 2);
 
-  // Initialize face alignment model 
-  seeta::FaceAlignment point_detector((MODEL_DIR + "seeta_fa_v1.1.bin").c_str());
+  // Initialize face alignment model
+  seeta::FaceAlignment point_detector(argv[2]);
 
   //load image
   IplImage *img_grayscale = NULL;
-  img_grayscale = cvLoadImage((DATA_DIR + "image_0001.png").c_str(), 0);
-  if (img_grayscale == NULL)
-  {
+  img_grayscale = cvLoadImage(argv[3], 0);
+
+  if (img_grayscale == NULL) {
     return 0;
   }
 
-  IplImage *img_color = cvLoadImage((DATA_DIR + "image_0001.png").c_str(), 1);
+  IplImage *img_color = cvLoadImage(argv[3], 1);
   int pts_num = 5;
   int im_width = img_grayscale->width;
   int im_height = img_grayscale->height;
-  unsigned char* data = new unsigned char[im_width * im_height];
-  unsigned char* data_ptr = data;
-  unsigned char* image_data_ptr = (unsigned char*)img_grayscale->imageData;
+  unsigned char *data = new unsigned char[im_width * im_height];
+  unsigned char *data_ptr = data;
+  unsigned char *image_data_ptr = (unsigned char *)img_grayscale->imageData;
   int h = 0;
+
   for (h = 0; h < im_height; h++) {
     memcpy(data_ptr, image_data_ptr, im_width);
     data_ptr += im_width;
@@ -92,8 +101,7 @@ int main(int argc, char** argv)
   std::vector<seeta::FaceInfo> faces = detector.Detect(image_data);
   int32_t face_num = static_cast<int32_t>(faces.size());
 
-  if (face_num == 0)
-  {
+  if (face_num == 0) {
     delete[]data;
     cvReleaseImage(&img_grayscale);
     cvReleaseImage(&img_color);
@@ -105,16 +113,23 @@ int main(int argc, char** argv)
   point_detector.PointDetectLandmarks(image_data, faces[0], points);
 
   // Visualize the results
-  cvRectangle(img_color, cvPoint(faces[0].bbox.x, faces[0].bbox.y), cvPoint(faces[0].bbox.x + faces[0].bbox.width - 1, faces[0].bbox.y + faces[0].bbox.height - 1), CV_RGB(255, 0, 0));
-  for (int i = 0; i<pts_num; i++)
-  {
-    cvCircle(img_color, cvPoint(points[i].x, points[i].y), 2, CV_RGB(0, 255, 0), CV_FILLED);
+  cvRectangle(img_color, cvPoint(faces[0].bbox.x, faces[0].bbox.y),
+              cvPoint(faces[0].bbox.x + faces[0].bbox.width - 1,
+                      faces[0].bbox.y + faces[0].bbox.height - 1), CV_RGB(255, 0, 0));
+
+  for (int i = 0; i < pts_num; i++) {
+    cvCircle(img_color, cvPoint(points[i].x, points[i].y), 2, CV_RGB(0, 255, 0),
+             CV_FILLED);
   }
-  cvSaveImage("result.jpg", img_color);
+
+  string save_path = argv[3];
+  save_path += "_alignment.jpg";
+  cvSaveImage(save_path.c_str(), img_color);
 
   // Release memory
   cvReleaseImage(&img_color);
   cvReleaseImage(&img_grayscale);
   delete[]data;
+  data = NULL;
   return 0;
 }
