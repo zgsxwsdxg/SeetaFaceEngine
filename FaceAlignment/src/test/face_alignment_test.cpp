@@ -108,18 +108,20 @@ int main(int argc, char **argv) {
     return 0;
   }
 
-  // Detect 5 facial landmarks
-  seeta::FacialLandmark points[5];
-  point_detector.PointDetectLandmarks(image_data, faces[0], points);
+  cout << "Face Num is " << face_num << endl;
+  for (int i = 0; i < face_num; ++i) {
+    // Detect 5 facial landmarks
+    seeta::FacialLandmark points[5];
+    point_detector.PointDetectLandmarks(image_data, faces[i], points);
+    // Visualize the results
+    cvRectangle(img_color, cvPoint(faces[i].bbox.x, faces[i].bbox.y),
+                cvPoint(faces[i].bbox.x + faces[i].bbox.width - 1,
+                        faces[i].bbox.y + faces[i].bbox.height - 1), CV_RGB(255, 0, 0));
 
-  // Visualize the results
-  cvRectangle(img_color, cvPoint(faces[0].bbox.x, faces[0].bbox.y),
-              cvPoint(faces[0].bbox.x + faces[0].bbox.width - 1,
-                      faces[0].bbox.y + faces[0].bbox.height - 1), CV_RGB(255, 0, 0));
-
-  for (int i = 0; i < pts_num; i++) {
-    cvCircle(img_color, cvPoint(points[i].x, points[i].y), 2, CV_RGB(0, 255, 0),
-             CV_FILLED);
+    for (int j = 0; j < pts_num; j++) {
+      cvCircle(img_color, cvPoint(points[j].x, points[j].y), 2, CV_RGB(0, 255, 0),
+               CV_FILLED);
+    }
   }
 
   string save_path = argv[3];
