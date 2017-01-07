@@ -24,6 +24,10 @@ set(VIPLNET_SRC_DIR ${PROJECT_SOURCE_DIR}/src)
 include_directories(${VIPLNET_INCLUDE_DIR})
 include_directories(${VIPLNET_SRC_DIR})
 
+set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
+link_directories(${PROJECT_SOURCE_DIR}/lib)
+
 add_subdirectory(src)
 
 aux_source_directory(./src SRC_LIST)
