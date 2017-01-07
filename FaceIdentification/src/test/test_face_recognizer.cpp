@@ -62,8 +62,11 @@ using namespace std;
 #endif //__unix
 
 
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
+//#include <opencv/cv.h>
+//#include <opencv/highgui.h>
+#include "opencv2/core.hpp"
+#include "opencv2/highgui.hpp"
+#include "opencv2/imgproc.hpp"
 
 #include "face_identification.h"
 #include "common.h"
@@ -80,6 +83,7 @@ using namespace std;
 
 #include "ctime"
 
+using namespace cv;
 using namespace seeta;
 
 #define TEST(major, minor) major##_##minor##_Tester()
