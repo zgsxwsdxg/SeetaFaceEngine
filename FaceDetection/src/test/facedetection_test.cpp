@@ -45,13 +45,13 @@ using namespace cv;
 int main(int argc, char **argv) {
   if (argc < 3) {
     cout << "Usage: " << argv[0]
-         << " image_path model_path"
+         << " model_path image_path"
          << endl;
     return -1;
   }
 
-  const char *img_path = argv[1];
-  seeta::FaceDetection detector(argv[2]);
+  const char *img_path = argv[2];
+  seeta::FaceDetection detector(argv[1]);
 
   detector.SetMinFaceSize(40);
   detector.SetScoreThresh(2.f);
@@ -112,7 +112,7 @@ int main(int argc, char **argv) {
     cv::rectangle(img, face_rect, CV_RGB(0, 0, 255), 4, 8, 0);
   }
 
-  string save_path = argv[1];
+  string save_path = argv[2];
   save_path += "_faces.jpg";
   imwrite(save_path, img);
 //  cv::namedWindow("Test", cv::WINDOW_AUTOSIZE);

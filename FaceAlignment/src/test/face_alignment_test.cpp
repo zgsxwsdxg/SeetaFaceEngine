@@ -34,8 +34,8 @@
 #include <iostream>
 #include <string>
 
-#include "cv.h"
-#include "highgui.h"
+#include "opencv/cv.h"
+#include "opencv/highgui.h"
 
 #include "face_detection.h"
 #include "face_alignment.h"
@@ -53,7 +53,7 @@ using namespace cv;
 int main(int argc, char **argv) {
   if (argc != 4) {
     cout << "Usage: " << argv[0] <<
-         "face_detection_model face_alignment_model image_file" << endl;
+         " face_detection_model face_alignment_model image_file" << endl;
     return -1;
   }
 
