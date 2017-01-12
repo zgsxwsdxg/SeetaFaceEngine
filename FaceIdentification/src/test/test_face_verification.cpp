@@ -187,8 +187,8 @@ int main(int argc, char *argv[]) {
                CV_RGB(0, 255, 0));
   }
 
-  cv::imwrite("gallery_point_result.jpg", gallery_img_color);
-  cv::imwrite("probe_point_result.jpg", probe_img_color);
+  cv::imwrite("./gallery_point_result.jpg", gallery_img_color);
+  cv::imwrite("./probe_point_result.jpg", probe_img_color);
 
   // Extract face identity feature
   float gallery_fea[2048];
