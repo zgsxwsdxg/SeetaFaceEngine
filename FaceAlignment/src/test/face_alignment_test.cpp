@@ -53,7 +53,7 @@ using namespace cv;
 int main(int argc, char **argv) {
   if (argc != 4) {
     cout << "Usage: " << argv[0] <<
-         "face_detection_model face_alignment_model image_file" << endl;
+         " face_detection_model face_alignment_model image_file" << endl;
     return -1;
   }
 
