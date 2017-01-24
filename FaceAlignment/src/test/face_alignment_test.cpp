@@ -34,8 +34,8 @@
 #include <iostream>
 #include <string>
 
-#include "cv.h"
-#include "highgui.h"
+#include "opencv/cv.h"
+#include "opencv/highgui.h"
 
 #include "face_detection.h"
 #include "face_alignment.h"
