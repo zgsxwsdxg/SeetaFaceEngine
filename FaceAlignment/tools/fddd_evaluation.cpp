@@ -70,31 +70,34 @@ int main(int argc, char **argv) {
   string images_dir = datas_dir + "/images/";
   string results_dir = datas_dir + "/results/";
   string results_images_dir = results_dir + "images/";
+  double average_time = 0.0f;
+  int image_total = 0;
 
   for (int list_idx = 1; list_idx <= 10; ++list_idx) {
     char fddb[300];
     char fddb_out[300];
-//    char fddb_answer[300];
+    char fddb_answer[300];
     sprintf(fddb, "%s/FDDB-folds/FDDB-fold-%02d.txt", datas_dir.c_str(), list_idx);
     sprintf(fddb_out, "%s/results/fold-%02d-out.txt", datas_dir.c_str(), list_idx);
-//    sprintf(fddb_answer, "%s/FDDB-folds/FDDB-fold-%02d-ellipseList.txt",
-//            datas_dir.c_str(),
-//            list_idx);
+    sprintf(fddb_answer, "%s/FDDB-folds/FDDB-fold-%02d-ellipseList.txt",
+            datas_dir.c_str(),
+            list_idx);
     cout << "FDDB list file:" << fddb << endl;
     std::ifstream file_reader;
     file_reader.open(fddb, std::ios::in);
 
     if (!file_reader.is_open()) {
       cout << "Open image list file failed.\n";
-      break;
+      continue;
     }
 
-//    FILE *fanswer = fopen(fddb_answer, "r");
+    FILE *fanswer = fopen(fddb_answer, "r");
 
-//    if (NULL == fanswer) {
-//      cout << "Open image annotation failed.\n";
-//      break;
-//    }
+    if (NULL == fanswer) {
+      cout << "Open image annotation failed.\n";
+      cout << "Please check file:" << fddb_answer << endl;
+      break;
+    }
 
     FILE *fout = fopen(fddb_out, "w");
 
@@ -108,12 +111,13 @@ int main(int argc, char **argv) {
     while (!file_reader.eof()) {
       string row_text = "";
       getline(file_reader, row_text, '\n');
-      if(row_text.empty()) {
-          continue;
+
+      if (row_text.empty()) {
+        continue;
       }
+
       string full_path = images_dir + row_text;
       full_path += image_format;
-      cout << "fold:"<< list_idx << ",image path:" << full_path << endl;
       //load image
       cv::Mat gray_image, color_image;
       gray_image = imread(full_path, IMREAD_GRAYSCALE);
@@ -123,6 +127,7 @@ int main(int argc, char **argv) {
       }
 
       images_cnt++;
+      image_total++;
       color_image = imread(full_path.c_str(), IMREAD_COLOR);
 
       int pts_num = 5;
@@ -153,11 +158,17 @@ int main(int argc, char **argv) {
       image_data.num_channels = 1;
 
       // Detect faces
+      long t0 = cv::getTickCount();
       std::vector<seeta::FaceInfo> faces = detector.Detect(image_data);
       int32_t face_num = static_cast<int32_t>(faces.size());
+      long t1 = cv::getTickCount();
+      double secs = (t1 - t0) / cv::getTickFrequency();
+      average_time += secs;
+      cout << "fold:" << list_idx << ",image path:" << row_text << ",time: " << secs
+           << " seconds " << endl;
 
-      cout << "Face Num is " << face_num << endl;
       fprintf(fout, "%s\n%d\n", row_text.c_str(), face_num);
+
       for (int i = 0; i < face_num; ++i) {
         // Detect 5 facial landmarks
         seeta::FacialLandmark points[5];
@@ -168,7 +179,8 @@ int main(int argc, char **argv) {
         face_roi.y = faces[i].bbox.y;
         face_roi.width = faces[i].bbox.width - 1;
         face_roi.height = faces[i].bbox.height - 1;
-        fprintf(fout, "%d %d %d %d %lf\n", face_roi.x, face_roi.y, face_roi.width, face_roi.height, faces[i].score);
+        fprintf(fout, "%d %d %d %d %lf\n", face_roi.x, face_roi.y, face_roi.width,
+                face_roi.height, faces[i].score);
         char str_score[30];
         sprintf(str_score, "%.4lf", faces[i].score);
         // face roi
@@ -185,14 +197,30 @@ int main(int argc, char **argv) {
         }
       }
 
+      // draw answer face
+      int an_face_num = 0;
+      char ans_image_path[400];
+      fscanf(fanswer, "%s", ans_image_path);
+      fscanf(fanswer, "%d", &an_face_num);
+
+      for (int k = 0; k < an_face_num; k++) {
+        double major_axis_radius, minor_axis_radius, angle, center_x, center_y, score;
+        fscanf(fanswer, "%lf %lf %lf %lf %lf %lf", &major_axis_radius,
+               &minor_axis_radius, \
+               &angle, &center_x, &center_y, &score);
+        // draw answer
+        angle = angle / 3.1415926 * 180.;
+        cv::ellipse(color_image, Point2d(center_x, center_y), Size(major_axis_radius,
+                    minor_axis_radius), \
+                    angle, 0., 360., Scalar(0, 0, 255), 2);
+      }
 
       string save_path = results_images_dir;
       string image_name = cv::format("%02d_%03d_%02d.jpg", list_idx, images_cnt,
                                      face_num);
       save_path += image_name;
-      cout << "image result path:" << save_path << endl;
+//      cout << "image result path:" << save_path << endl;
       imwrite(save_path, color_image);
-
 
       delete[]data;
       data = NULL;
@@ -200,6 +228,12 @@ int main(int argc, char **argv) {
 
     file_reader.close();
     fclose(fout);
+    fclose(fanswer);
+  }
+
+  if (image_total > 0) {
+    cout << "Detection average time:" << average_time / image_total <<
+         "s,total images:" << image_total << endl;
   }
 
   return 0;
